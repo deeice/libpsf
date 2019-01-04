@@ -49,7 +49,7 @@
 	#endif
 #endif
 
-void psf_open_font(struct psf_font *font, char *fname)
+void psf_open_font(struct psf_font *font, const char *fname)
 {
 	font->psf_fd=(void *)OPEN(fname);
 
