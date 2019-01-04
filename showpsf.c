@@ -74,6 +74,8 @@ int main(int argc, char **argv)
   //Unicode allows us to display exactly which character the user types
   SDL_EnableUNICODE(1);
 
+  SDL_ShowCursor(SDL_DISABLE);
+  
   //psf_get_glyph_total tells us how many glyphs are in the font
   int i;
   for (i=0;i<psf_get_glyph_total(&font);i++)
@@ -98,6 +100,32 @@ int main(int argc, char **argv)
   //Where in the string to add new characters
   int pos=0;
 
+  int j=0,x=0,y=0;
+
+  //Clear the screen (the sloppy way)
+  SDL_FillRect(screen,NULL,SDL_MapRGB(screen->format,0xff,0xff,0xff));
+
+  for (i=0,j=0;i<psf_get_glyph_total(&font);i++)
+  {
+    if (320 < (x+1)*psf_get_glyph_width(&font))
+    {
+      y++;
+      x=0;
+    }
+
+    DisplayChar(i,x+(psf_get_glyph_width(&font)*x++),y+(psf_get_glyph_height(&font)*y));
+
+    if (++j >= 32)
+    {
+      j=0;
+      y++;
+      x=0;
+    }
+  }
+  
+  SDL_Flip(screen); //Display everything
+  usleep(100000); //Don't hog all the CPU
+  
   //Standard SDL event loop
   SDL_Event event;
   while (!quit)
@@ -111,28 +139,34 @@ int main(int argc, char **argv)
 
       if (event.type == SDL_KEYDOWN)
       {
-                            switch(event.key.keysym.sym) {
-                            case SDLK_ESCAPE:
-                                quit = 1;
-                                break;
-                            default:
-                                if (event.key.keysym.unicode)                  
-        {
-          //Add the user's character to the string
-          buf[pos++]=event.key.keysym.unicode;
-          buf[pos]='\0';  //Make sure it's null terminated
-        }
-                            }
+	switch(event.key.keysym.sym) {
+	case SDLK_ESCAPE:
+	  quit = 1;
+	  break;
+	default:
+#if 0
+	  if (event.key.keysym.unicode)                  
+	  {
+	    //Add the user's character to the string
+	    buf[pos++]=event.key.keysym.unicode;
+	    buf[pos]='\0';  //Make sure it's null terminated
+	  }
+#else
+	  quit = 1;
+#endif
+	  break;
+	}
       }
     }
-
+#if 0
     //Clear the screen (the sloppy way)
     SDL_FillRect(screen,NULL,SDL_MapRGB(screen->format,0xFF,0xFF,0xFF));
 
     //Display the string
-    DisplayStr(buf,50,50);
+    DisplayStr(buf,x,y);
 
     SDL_Flip(screen); //Display everything
+#endif
     usleep(100000); //Don't hog all the CPU
   }
 
